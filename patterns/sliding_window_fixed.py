@@ -12,7 +12,7 @@ for r, val in enumerate(nums):
 
     cur_sum += val
 
-    if (r - l + 1 > k):
+    if r - l + 1 > k:
         cur_sum -= nums[l]
         l += 1
         max_sum = max(max_sum, cur_sum)
