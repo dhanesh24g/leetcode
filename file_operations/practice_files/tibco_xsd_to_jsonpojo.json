@@ -1,0 +1,62 @@
+{
+  "version": "1.0",
+  "activity_type": "Schema_XSD",
+  "usage": "Instructions and transformation rules for converting .xsd schema files into Java JSON POJO classes.",
+  "metadata": {
+    "file_id": "tibco_xsd_to_jsonpojo",
+    "tags": ["xsd", "schema", "pojo", "json", "jackson"],
+    "category": "tibco_schema",
+    "last_updated": "2025-08-10T19:12:00"
+  },
+  "description": "Converts Tibco BusinessWorks XSD schema files to Java POJO classes for JSON serialization/deserialization with camelCase fields",
+  "transformation_rules": {
+    "class_generation": {
+      "class_name": "Derived from root element name (e.g. AcctDetails -> AcctDetails)",
+      "annotations": [
+        "@Data (Lombok)",
+        "@JsonInclude(JsonInclude.Include.NON_NULL)"
+      ]
+    },
+    "field_mapping": {
+      "source": "xs:element definitions within xs:complexType/xs:sequence",
+      "target": "Private Java fields with camelCase naming",
+      "naming_convention": "Convert XML element names to camelCase (e.g., CustomerID -> customerId, AcctNumber -> acctNumber)",
+      "type_conversion": {
+        "xs:string": "String",
+        "xs:decimal": "BigDecimal",
+        "xs:int": "Integer",
+        "xs:boolean": "Boolean",
+        "xs:dateTime": "LocalDateTime"
+      }
+    },
+    "validation_mapping": {
+      "minOccurs='0'": "Nullable fields without @NotNull annotation",
+      "required_fields": "Fields without minOccurs='0' must have @NotNull annotation",
+      "pattern": "Map to @Pattern annotation if applicable",
+      "length_restrictions": "Map to @Size(min, max) annotations if applicable"
+    }
+  },
+  "input_example": {
+    "file_type": "Tibco XSD Schema",
+    "content": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\n<xs:schema xmlns:xs=\"http://www.w3.org/2001/XMLSchema\"\n  xmlns=\"http://www.tibco.com/schemas/TIBCO_BW_REST_EXAMPLE/Schemas/Schema.xsd\"\n  targetNamespace=\"http://www.tibco.com/schemas/TIBCO_BW_REST_EXAMPLE/Schemas/Schema.xsd\"\n  elementFormDefault=\"qualified\"\n  attributeFormDefault=\"unqualified\">\n  <xs:element name=\"AcctDetails\">\n    <xs:complexType>\n      <xs:sequence>\n        <xs:element name=\"RecordIndicator\" type=\"xs:string\"/>\n        <xs:element name=\"CustomerID\" type=\"xs:string\"/>\n        <xs:element name=\"AcctNumber\" type=\"xs:string\"/>\n        <xs:element name=\"BranchID\" type=\"xs:string\" minOccurs=\"0\"/>\n        <xs:element name=\"StatusCode\" type=\"xs:string\" minOccurs=\"0\"/>\n        <xs:element name=\"RefNumber\" type=\"xs:string\" minOccurs=\"0\"/>\n        <xs:element name=\"ExchangeRate\" type=\"xs:decimal\" minOccurs=\"0\"/>\n        <xs:element name=\"Filler\" type=\"xs:string\" minOccurs=\"0\"/>\n      </xs:sequence>\n    </xs:complexType>\n  </xs:element>\n</xs:schema>"
+  },
+  "output_example": {
+    "language": "Java",
+    "framework": "Spring Boot with Jackson",
+    "content": "@Data\n@JsonInclude(JsonInclude.Include.NON_NULL)\npublic class AcctDetailsDto {\n\n    @NotNull\n    private String recordIndicator;\n\n    @NotNull\n    private String customerId;\n\n    @NotNull\n    private String acctNumber;\n\n    private String branchId;\n    private String statusCode;\n    private String refNumber;\n    private BigDecimal exchangeRate;\n    private String filler;\n}"
+  },
+  "key_elements": {
+    "xs:element_root": "Defines the main class name for JSON POJO",
+    "xs:complexType": "Indicates a complex object requiring class generation",
+    "xs:sequence": "Maps to ordered fields in the Java class",
+    "xs:element_nested": "Individual fields converted to camelCase naming",
+    "minOccurs": "Determines field nullability and validation annotations",
+  },
+  "special_considerations": [
+    "minOccurs='0' fields are nullable, but others require @NotNull",
+    "xs:decimal maps to BigDecimal for precision in JSON",
+    "XML element names converted to camelCase (CustomerID -> customerId)",
+    "@JsonInclude(NON_NULL) prevents null fields in JSON output",
+    "Handle nested complexTypes as separate JSON POJO classes"
+  ]
+}
