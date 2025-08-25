@@ -1,0 +1,17 @@
+A Tibco .process file contains the following important XML tags-
+
+- ProcessDefinition: The Process Definition resource is to define business processes and workflow.
+- startName: The Start activity is the first activity in a process definition. 
+	- startType: Specifies the input element (tag) that is passed to the process from the calling process.
+- endName: The End activity is the last activity in a process definition.
+	- endType: Specifies the output element (tag) that will be returned to the calling process.
+- returnBindings: Specifies the mappings in XPath format to generate the expected return values from .process file. It follows the structure specified in endType.
+- activity: Name of the activity. Activities are the individual units of work dedicated to perform a specific task in a process definition.
+	- resourceType: The actual Tibco BusinessWorks activity, that is responsible for the unit of work.
+	- config: Specifies what kind of schema to be used for the activity.
+	- inputBindings: The mapping of data transformation rules from the source schema to target schema.
+- transition: It contains the connections between different activities to generate the workflow. (From activity -> To activity)
+	- conditionType: Specifies if there is any conditional routing for the transition.
+	- expression: Optional XPath or expression language condition evaluated when conditionType is set.
+
+NOTE: All the schema namespace prefixes like [xsd:, pd:, xsl:, etc.] which are mentioned with the colon are to be ignored during the conversion.

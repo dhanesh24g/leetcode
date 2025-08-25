@@ -1,0 +1,54 @@
+{
+  "version": "1.0",
+  "activity_type": "DataFormat_SharedParse",
+  "usage": "Instructions and transformation rules for converting .sharedparse XML files into Java fixed-length format POJO classes.",
+  "metadata": {
+    "file_id": "tibco_dataformat_to_jsonpojo",
+    "tags": ["dataformat", "sharedparse", "pojo", "fixedlength", "bindy"],
+    "category": "tibco_dataformat",
+    "last_updated": "2025-08-10T18:12:00"
+  },
+  "description": "Steps to convert Tibco BusinessWorks .sharedparse files to Java POJO classes for fixed-length format handling",
+  "transformation_rules": {
+    "class_generation": {
+      "class_name": "Derived from <name> element with 'Record' suffix",
+      "annotations": [
+        "@Data (Lombok)",
+        "@FixedLengthRecord with pos, length, padding and optional alignment configuration"
+      ]
+    },
+    "field_mapping": {
+      "source": "OffsetString and DataFormat elements",
+      "target": "@DataField annotated private fields",
+      "position_calculation": "Extract from OffsetString format: ElementName(start,end)"
+    },
+    "configuration_mapping": {
+      "LineLength": "Maps to @FixedLengthRecord(length = value)",
+      "FillCharacter": "Maps to paddingChar parameter",
+      "FormatType": "Determines that it is Fixed format based record processing strategy"
+    }
+  },
+  "input_example": {
+    "file_type": "Tibco .sharedparse XML",
+    "content": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<BWSharedResource xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\">\n    <name>GetAccountDataFormat</name>\n    <resourceType>ae.shared.ParseSharedResource</resourceType>\n    <config xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\">\n        <FormatType>Fixed format</FormatType>\n        <ColumnSeparator>,</ColumnSeparator>\n        <ColSeparatorRule>Treat all characters as entered as a single column separator string</ColSeparatorRule>\n        <LineSeparator>&#xD;\n</LineSeparator>\n        <FillCharacter>Space</FillCharacter>\n        <LineLength>38</LineLength>\n        <OffsetString>RecordType(0,1)\nAccountNumber(1,18)\nTransactionId(18,38)\n</OffsetString>\n        <DataFormat>\n            <xsd:element name=\"Format\">\n                <xsd:complexType>\n                    <xsd:sequence>\n                        <xsd:element name=\"RecordType\" type=\"xsd:string\"/>\n                        <xsd:element name=\"AccountNumber\" type=\"xsd:string\"/>\n                        <xsd:element name=\"TransactionId\" type=\"xsd:string\"/>\n                    </xsd:sequence>\n                </xsd:complexType>\n            </xsd:element>\n        </DataFormat>\n    </config>\n</BWSharedResource>"
+  },
+  "output_example": {
+    "language": "Java",
+    "framework": "Spring Boot with Apache Camel Bindy",
+    "content": "@Data\n@FixedLengthRecord(length = 38, paddingChar = ' ', trim = true)\npublic class GetAccountRecord {\n\n    @DataField(pos = 0, length = 1)\n    private String recordType;\n\n    @DataField(pos = 1, length = 17, paddingChar = '0')\n    private String accountNumber;\n\n    @DataField(pos = 18, length = 20, align = \"L\", paddingChar = '0')\nprivate String transactionId;\n}"
+  },
+  "key_elements": {
+    "name": "Source for class naming",
+    "FormatType": "Determines parsing strategy (Fixed format -> @FixedLengthRecord)",
+    "FillCharacter": "Maps to paddingChar parameter",
+    "LineLength": "Total record length",
+    "OffsetString": "Field positions in format: FieldName(start,end)",
+    "DataFormat": "XSD elements for field dataTypes and optional/mandatory cardinality"
+  },
+  "special_considerations": [
+    "Position calculation: length = end_pos - start_pos",
+    "Default padding character is space unless specified",
+    "Field alignment defaults to left unless configured",
+    "Class name convention: {OriginalName}Record"
+  ]
+}
