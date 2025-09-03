@@ -9,4 +9,4 @@ def grid_paths(n: int, m: int):
     return grid_paths(n, m - 1) + grid_paths(n - 1, m)
 
 
-print(grid_paths(13, 17))
+print(grid_paths(2, 4))
