@@ -15,7 +15,14 @@ class Solution:
             prev = head
             head = nxt
             print(f"prev: {prev.val}")
-
+        """
+            Another way to solve this problem:
+            
+            curr_prev = prev      
+            prev = head          
+            head = head.next
+            prev.next = curr_prev        
+        """
         return prev
 
 def main():
