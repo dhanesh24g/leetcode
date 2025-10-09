@@ -1,0 +1,188 @@
+<ProcessDefinition>
+    <import namespace="http://www.tibco.com/schemas/TIBCO_BW_REST_EXAMPLE/Schemas/Schema.xsd" schemaLocation="/Schemas/AccountAttributes.xsd"/>
+    <name>Processes/AccountProcess.process</name>
+    <startName>Start</startName>
+    <startType>
+        <element name="InvokeProcessInput">
+            <complexType>
+                <sequence>
+                    <element name="FixedData" type="xsd:string"/>
+                </sequence>
+            </complexType>
+        </element>
+    </startType>
+    <startX>47</startX>
+    <startY>62</startY>
+    <returnBindings>
+        <Response>
+            <Result>
+                <value-of select="tib:substring-before-last(substring-after($Render-JSON/ns:ActivityOutputClass/jsonString, '&quot;root&quot;:'), '}')"/>
+            </Result>
+        </Response>
+    </returnBindings>
+    <endName>End</endName>
+    <endType>
+        <element name="Response">
+            <complexType>
+                <sequence>
+                    <element name="Result" type="xsd:string"/>
+                </sequence>
+            </complexType>
+        </element>
+    </endType>
+    <endX>644</endX>
+    <endY>62</endY>
+    <errorSchemas/>
+    <processVariables/>
+    <targetNamespace>http://xmlns.example.com/1357991683487</targetNamespace>
+    <activity name="GetDataFormat">
+        <type>com.tibco.pe.core.CallProcessActivity</type>
+        <resourceType>ae.process.subprocess</resourceType>
+        <x>166</x>
+        <y>64</y>
+        <config>
+            <processName>/Processes/GetDataFormat.process</processName>
+        </config>
+        <inputBindings>
+            <Input>
+                <Values>
+                    <value-of select="$Start/InvokeProcessInput/FixedData"/>
+                </Values>
+            </Input>
+        </inputBindings>
+    </activity>
+    <activity name="Map Data">
+        <type>com.tibco.plugin.mapper.MapperActivity</type>
+        <resourceType>ae.activities.MapperActivity</resourceType>
+        <x>322</x>
+        <y>62</y>
+        <config>
+            <element>
+                <element name="root">
+                    <complexType>
+                        <sequence>
+                            <element ref="pfx:AcctDetails"/>
+                        </sequence>
+                    </complexType>
+                </element>
+            </element>
+        </config>
+        <inputBindings>
+            <variable name="var" select="$GetDataFormat/root/Rows/Format[1]"/>
+            <root>
+                <AcctDetails>
+                    <RecordIndicator>
+                        <value-of select="$var/RecordType"/>
+                    </RecordIndicator>
+                    <CustomerID>
+                        <value-of select="$var/CustomerId"/>
+                    </CustomerID>
+                    <AcctNumber>
+                        <value-of select="$var/AccountNumber"/>
+                    </AcctNumber>
+                    <TxnID>
+                        <value-of select="$var/TransactionId"/>
+                    </TxnID>
+                    <if test="$var/TransactionType">
+                        <TxnTypeCode>
+                            <value-of select="$var/TransactionType"/>
+                        </TxnTypeCode>
+                    </if>
+                    <TxnAmount>
+                        <value-of select="$var/TransactionAmount"/>
+                    </TxnAmount>
+                    <Currency>
+                        <value-of select="$var/CurrencyCode"/>
+                    </Currency>
+                    <TxnDate>
+                        <value-of select="$var/TransactionDate"/>
+                    </TxnDate>
+                    <TxnTime>
+                        <value-of select="$var/TransactionTime"/>
+                    </TxnTime>
+                    <if test="$var/BranchCode">
+                        <BranchID>
+                            <value-of select="$var/BranchCode"/>
+                        </BranchID>
+                    </if>
+                    <if test="$var/ChannelCode">
+                        <ChannelType>
+                            <value-of select="$var/ChannelCode"/>
+                        </ChannelType>
+                    </if>
+                    <if test="$var/TransactionStatus">
+                        <StatusCode>
+                            <value-of select="$var/TransactionStatus"/>
+                        </StatusCode>
+                    </if>
+                    <CurrentBalance>
+                        <value-of select="$var/AvailableBalance"/>
+                    </CurrentBalance>
+                    <ProcessDate>
+                        <value-of select="$var/ProcessingDate"/>
+                    </ProcessDate>
+                    <AuthCode>
+                        <value-of select="&quot;OAuth&quot;"/>
+                    </AuthCode>
+                    <FeeAmount>
+                        <value-of select="0"/>
+                    </FeeAmount>
+                </AcctDetails>
+            </root>
+        </inputBindings>
+    </activity>
+    <activity name="Render JSON">
+        <type>com.tibco.plugin.json.activities.JSONRenderActivity</type>
+        <resourceType>ae.activities.JSONRenderActivity</resourceType>
+        <x>498</x>
+        <y>62</y>
+        <config>
+            <SchemaType>xsdType</SchemaType>
+            <BadgerfishCheck>false</BadgerfishCheck>
+            <ActivityInputEditor>
+                <element name="root">
+                    <complexType>
+                        <sequence>
+                            <element ref="pfx:AcctDetails"/>
+                        </sequence>
+                    </complexType>
+                </element>
+            </ActivityInputEditor>
+        </config>
+        <inputBindings>
+            <ActivityInputClass>
+                <root>
+                    <copy-of select="$Map-Data/root/pfx:AcctDetails"/>
+                </root>
+            </ActivityInputClass>
+        </inputBindings>
+    </activity>
+    <transition>
+        <from>Start</from>
+        <to>GetDataFormat</to>
+        <lineType>Default</lineType>
+        <lineColor>-16777216</lineColor>
+        <conditionType>always</conditionType>
+    </transition>
+    <transition>
+        <from>GetDataFormat</from>
+        <to>Map Data</to>
+        <lineType>Default</lineType>
+        <lineColor>-16777216</lineColor>
+        <conditionType>always</conditionType>
+    </transition>
+    <transition>
+        <from>Map Data</from>
+        <to>Render JSON</to>
+        <lineType>Default</lineType>
+        <lineColor>-16777216</lineColor>
+        <conditionType>always</conditionType>
+    </transition>
+    <transition>
+        <from>Render JSON</from>
+        <to>End</to>
+        <lineType>Default</lineType>
+        <lineColor>-16777216</lineColor>
+        <conditionType>always</conditionType>
+    </transition>
+</ProcessDefinition>
